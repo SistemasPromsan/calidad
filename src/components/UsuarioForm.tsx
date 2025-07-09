@@ -66,7 +66,8 @@ export default function UsuarioForm({ usuario, onSuccess, onClose }: Props) {
                     <select name="id_rol" value={form.id_rol} onChange={handleChange}>
                         <option value="1">Administrador</option>
                         <option value="2">Supervisor</option>
-                        <option value="3">Cliente</option>
+                        <option value="3">Coordinador</option>
+                        <option value="4">Cliente</option>
                     </select>
                     <div className="form-actions">
                         <button type="submit">Guardar</button>

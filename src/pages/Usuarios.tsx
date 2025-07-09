@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import UsuarioForm from '../components/UsuarioForm';
+import LayoutPrivado from '../components/LayoutPrivado';
 
 export default function Usuarios() {
     const [usuarios, setUsuarios] = useState<any[]>([]);
@@ -41,7 +42,6 @@ export default function Usuarios() {
         }
     };
 
-
     const abrirFormulario = (usuario: any = null) => {
         setUsuarioSeleccionado(usuario);
         setMostrarFormulario(true);
@@ -52,61 +52,65 @@ export default function Usuarios() {
     }, []);
 
     return (
-        <div style={{ padding: '2rem' }}>
-            <h2>Usuarios registrados</h2>
-            <button onClick={() => abrirFormulario()} style={{ marginBottom: '1rem' }}>
-                + Nuevo usuario
-            </button>
+        <LayoutPrivado>
+            <div style={{ padding: '2rem', width: '100%' }}>
+                <h2>Usuarios registrados</h2>
+                <button onClick={() => abrirFormulario()} style={{ marginBottom: '1rem' }}>
+                    + Nuevo usuario
+                </button>
 
-            <table width="100%" cellPadding={10} style={{ borderCollapse: 'collapse' }}>
-                <thead>
-                    <tr style={{ background: '#007bff', color: '#fff' }}>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Username</th>
-                        <th>Email</th>
-                        <th>Rol</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {usuarios.map((u) => (
-                        <tr key={u.id} style={{ background: '#fff', borderBottom: '1px solid #ccc' }}>
-                            <td>{u.id}</td>
-                            <td>{u.nombre}</td>
-                            <td>{u.username}</td>
-                            <td>{u.email}</td>
-                            <td>{u.rol}</td>
-                            <td>{u.estado}</td>
-                            <td>
-                                <button onClick={() => abrirFormulario(u)}>Editar</button>
-                                <button
-                                    onClick={() => (u.estado === 'activo' ? desactivarUsuario(u.id) : activarUsuario(u.id))}
-                                    style={{
-                                        backgroundColor: u.estado === 'activo' ? '#dc3545' : '#28a745',
-                                        color: 'white',
-                                        border: 'none',
-                                        padding: '5px 10px',
-                                        borderRadius: '5px',
-                                        cursor: 'pointer',
-                                    }}
-                                >
-                                    {u.estado === 'activo' ? 'Desactivar' : 'Activar'}
-                                </button>   
-                            </td>
+                <table width="100%" cellPadding={10} style={{ borderCollapse: 'collapse' }}>
+                    <thead>
+                        <tr style={{ background: '#007bff', color: '#fff' }}>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {usuarios.map((u) => (
+                            <tr key={u.id} style={{ background: '#fff', borderBottom: '1px solid #ccc' }}>
+                                <td>{u.id}</td>
+                                <td>{u.nombre}</td>
+                                <td>{u.username}</td>
+                                <td>{u.email}</td>
+                                <td>{u.rol}</td>
+                                <td>{u.estado}</td>
+                                <td>
+                                    <button onClick={() => abrirFormulario(u)}>Editar</button>{' '}
+                                    <button
+                                        onClick={() => (u.estado === 'activo' ? desactivarUsuario(u.id) : activarUsuario(u.id))}
+                                        style={{
+                                            backgroundColor: u.estado === 'activo' ? '#dc3545' : '#28a745',
+                                            color: 'white',
+                                            border: 'none',
+                                            padding: '5px 10px',
+                                            borderRadius: '5px',
+                                            cursor: 'pointer',
+                                            marginLeft: '5px'
+                                        }}
+                                    >
+                                        {u.estado === 'activo' ? 'Desactivar' : 'Activar'}
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
 
-            {mostrarFormulario && (
-                <UsuarioForm
-                    usuario={usuarioSeleccionado}
-                    onSuccess={cargarUsuarios}
-                    onClose={() => setMostrarFormulario(false)}
-                />
-            )}
-        </div>
+                {mostrarFormulario && (
+                    <UsuarioForm
+                        usuario={usuarioSeleccionado}
+                        onSuccess={cargarUsuarios}
+                        onClose={() => setMostrarFormulario(false)}
+                    />
+                )}
+            </div>
+        </LayoutPrivado>
     );
 }
+    
