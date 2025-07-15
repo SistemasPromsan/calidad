@@ -1,4 +1,6 @@
 import React from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
@@ -13,7 +15,9 @@ import Defectos from './pages/Defectos';
 import Proveedores from './pages/Proveedores';
 import Retrabajos from './pages/Retrabajos';
 import Turnos from './pages/Turnos';
-
+import Cargos from './pages/Cargos';
+import ReporteForm from './pages/ReporteForm';
+import Incumplimientohoras from './pages/IncumplimientoHoras';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -27,7 +31,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             </RutasProtegidas>
           } />
           <Route path="/usuarios" element={
-            <RutasProtegidas>
+            <RutasProtegidas rolesPermitidos={['Administrador']}>
               <Usuarios />
             </RutasProtegidas>
           } />
@@ -64,6 +68,21 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           <Route path="/turnos" element={
             <RutasProtegidas>
               <Turnos />
+            </RutasProtegidas>
+          } />
+          <Route path="/cargos" element={
+            <RutasProtegidas>
+              <Cargos />
+            </RutasProtegidas>
+          } />
+          <Route path="/incumplimientohoras" element={
+            <RutasProtegidas>
+              <Incumplimientohoras />
+            </RutasProtegidas>
+          } />
+          <Route path="/reporteform" element={
+            <RutasProtegidas>
+              <ReporteForm />
             </RutasProtegidas>
           } />
         </Routes>

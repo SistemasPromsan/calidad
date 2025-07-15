@@ -9,6 +9,7 @@ type Usuario = {
     username: string;
     email: string;
     rol: string;
+    id_rol: string;
 };
 
 // Tipo de datos del contexto

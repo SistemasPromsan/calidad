@@ -30,7 +30,8 @@
   margin-bottom: 1.5rem;
 }
 
-.formulario input {
+.formulario input,
+.formulario select {
   padding: 0.5rem 1rem;
   width: 300px;
   border: 1px solid #ccc;
@@ -59,12 +60,13 @@
   width: 100%;
   border-collapse: collapse;
   background-color: white;
-  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
   border-radius: 8px;
   overflow: hidden;
 }
 
-.tabla th, .tabla td {
+.tabla th,
+.tabla td {
   padding: 0.8rem 1rem;
   text-align: left;
   border-bottom: 1px solid #eee;
@@ -109,27 +111,3 @@ button {
 .btn-verde:hover {
   background-color: #1c7c34;
 }
-
-
-.formulario select {
-  padding: 0.5rem 1rem;
-  width: 300px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 1rem;
-  background-color: white;
-  appearance: none;
-}
-
-.formulario select[multiple] {
-  height: 120px;
-  width: 300px;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  background-color: white;
-  font-size: 1rem;
-  overflow-y: auto;
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
-}
-
