@@ -1,6 +1,7 @@
 import { useAuth } from '../context/AuthContext';
 import LayoutPrivado from '../components/LayoutPrivado';
 
+
 export default function Dashboard() {
     const { usuario } = useAuth();
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import LayoutPrivado from '../components/LayoutPrivado';
+import API from '../config';
 
 export default function Usuarios() {
     const [usuarios, setUsuarios] = useState<any[]>([]);
@@ -15,7 +16,7 @@ export default function Usuarios() {
 
     const cargarUsuarios = async () => {
         try {
-            const res = await axios.get('http://localhost/calidad/calidad-backend/api/usuarios.php');
+            const res = await axios.get(API + 'usuarios.php');
             setUsuarios(res.data);
         } catch (error) {
             console.error('Error al cargar usuarios:', error);
@@ -34,8 +35,8 @@ export default function Usuarios() {
         e.preventDefault();
         try {
             const url = editandoId
-                ? 'http://localhost/calidad/calidad-backend/api/actualizar_usuario.php'
-                : 'http://localhost/calidad/calidad-backend/api/crear_usuario.php';
+                ? API + 'actualizar_usuario.php'
+                : API + 'crear_usuario.php';
 
             const payload = editandoId ? { ...form, id: editandoId } : form;
             const res = await axios.post(url, payload);
@@ -65,12 +66,12 @@ export default function Usuarios() {
 
     const desactivarUsuario = async (id: number) => {
         if (!confirm('¿Seguro que deseas desactivar este usuario?')) return;
-        await axios.post('http://localhost/calidad/calidad-backend/api/desactivar_usuario.php', { id });
+        await axios.post(API + 'desactivar_usuario.php', { id });
         cargarUsuarios();
     };
 
     const activarUsuario = async (id: number) => {
-        await axios.post('http://localhost/calidad/calidad-backend/api/activar_usuario.php', { id });
+        await axios.post(API + 'activar_usuario.php', { id });
         cargarUsuarios();
     };
 

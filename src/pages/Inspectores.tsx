@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import LayoutPrivado from '../components/LayoutPrivado';
 import InspectorForm from '../components/InspectorForm';
+import API from '../config';
 
 type Inspector = {
     id: number;
-    inspector: string;
+    nombre: string;
     descripcion: string;
     estatus: string;
     creado_en: string;
@@ -22,7 +23,7 @@ export default function Inspectores() {
 
     const fetchInspectores = async () => {
         try {
-            const res = await axios.get('http://localhost/calidad/calidad-backend/api/inspectores/inspectores.php');
+            const res = await axios.get(API + 'inspectores/inspectores.php');
 
             // Como el backend devuelve directamente un array:
             if (Array.isArray(res.data)) {
@@ -40,7 +41,7 @@ export default function Inspectores() {
     const desactivarInspector = async (id: number) => {
         if (!confirm("¿Deseas desactivar este inspector?")) return;
         try {
-            const res = await axios.post('http://localhost/calidad/calidad-backend/api/inspectores/desactivar_inspector.php', { id });
+            const res = await axios.post(API + 'inspectores/desactivar_inspector.php', { id });
             if (res.data.success) {
                 alert('Inspector desactivado correctamente.');
                 fetchInspectores();
@@ -55,7 +56,7 @@ export default function Inspectores() {
 
     const activarInspector = async (id: number) => {
         try {
-            const res = await axios.post('http://localhost/calidad/calidad-backend/api/inspectores/activar_inspector.php', { id });
+            const res = await axios.post(API + 'inspectores/activar_inspector.php', { id });
             if (res.data.success) {
                 alert('Inspector activado correctamente.');
                 fetchInspectores();
@@ -74,7 +75,7 @@ export default function Inspectores() {
     const eliminarInspector = async (id: number) => {
         if (!confirm("¿Eliminar permanentemente este inspector?")) return;
         try {
-            await axios.post('http://localhost/calidad/calidad-backend/api/inspectores/eliminar_inspector.php', {
+            await axios.post(API + 'inspectores/eliminar_inspector.php', {
                 id,
                 rol: 'admin' // puedes reemplazarlo por el rol dinámico si lo tienes
             });
@@ -129,7 +130,7 @@ export default function Inspectores() {
                             inspectores.map((i) => (
                                 <tr key={i.id} style={{ background: '#fff', borderBottom: '1px solid #ccc' }}>
                                     <td>{i.id}</td>
-                                    <td>{i.inspector}</td>
+                                    <td>{i.nombre}</td>
                                     <td>{i.descripcion}</td>
                                     <td>{i.estatus}</td>
                                     <td>{new Date(i.creado_en).toLocaleString()}</td>

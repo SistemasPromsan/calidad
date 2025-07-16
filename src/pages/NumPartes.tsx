@@ -3,7 +3,7 @@ import axios from 'axios';
 import './NumPartes.css';
 import LayoutPrivado from '../components/LayoutPrivado';
 
-const API = 'http://localhost/calidad/calidad-backend/api';
+import API from '../config';
 
 type NumParte = {
     id?: number;
@@ -43,7 +43,7 @@ export default function NumPartes() {
 
     const obtenerNumPartes = async () => {
         try {
-            const res = await axios.get(`${API}/num_partes/num_partes.php`);
+            const res = await axios.get(`${API}num_partes/num_partes.php`);
             setNumPartes(res.data);
         } catch (error) {
             console.error('Error al obtener num_partes:', error);
@@ -52,7 +52,7 @@ export default function NumPartes() {
 
     const obtenerPlataformas = async () => {
         try {
-            const res = await axios.get(`${API}/plataformas/plataformas.php`);
+            const res = await axios.get(`${API}plataformas/plataformas.php`);
             setPlataformas(res.data);
         } catch (error) {
             console.error('Error al obtener plataformas:', error);
@@ -61,7 +61,7 @@ export default function NumPartes() {
 
     const obtenerProveedores = async () => {
         try {
-            const res = await axios.get(`${API}/proveedores/proveedores.php`);
+            const res = await axios.get(`${API}proveedores/proveedores.php`);
             setProveedores(res.data);
         } catch (error) {
             console.error('Error al obtener proveedores:', error);
@@ -70,7 +70,7 @@ export default function NumPartes() {
 
     const guardar = async () => {
         try {
-            await axios.post(`${API}/num_partes/crear_num_parte.php`, formulario);
+            await axios.post(`${API}num_partes/crear_num_parte.php`, formulario);
             obtenerNumPartes();
             limpiar();
         } catch (error) {
@@ -80,7 +80,7 @@ export default function NumPartes() {
 
     const actualizar = async () => {
         try {
-            await axios.put(`${API}/num_partes/editar_num_parte.php`, formulario);
+            await axios.put(`${API}num_partes/editar_num_parte.php`, formulario);
             obtenerNumPartes();
             limpiar();
         } catch (error) {

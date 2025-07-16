@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import API from '../config';
+
 
 export default function Login() {
     const [username, setUsername] = useState('');
@@ -12,7 +14,7 @@ export default function Login() {
         e.preventDefault();
 
         try {
-            const res = await axios.post('http://localhost/calidad/calidad-backend/api/login.php', {
+            const res = await axios.post(API + 'login.php', {
                 username,
                 password
             });

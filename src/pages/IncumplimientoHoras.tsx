@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import LayoutPrivado from '../components/LayoutPrivado';
 import './IncumplimientoHoras.css';
-
-const API = 'http://localhost/calidad/calidad-backend/api/incumplimiento_horas';
+import API from '../config';
 
 export default function IncumplimientoHoras() {
     const [registros, setRegistros] = useState([]);
     const [formulario, setFormulario] = useState({ id: null, nombre: '', descripcion: '' });
     const [modoEdicion, setModoEdicion] = useState(false);
+
+    const endpoint = `${API}incumplimiento_horas/`;
 
     useEffect(() => {
         obtenerRegistros();
@@ -16,7 +17,7 @@ export default function IncumplimientoHoras() {
 
     const obtenerRegistros = async () => {
         try {
-            const res = await axios.get(`${API}/incumplimiento_horas.php`);
+            const res = await axios.get(`${endpoint}incumplimiento_horas.php`);
             setRegistros(res.data);
         } catch (err) {
             console.error('Error al obtener registros:', err);
@@ -24,10 +25,13 @@ export default function IncumplimientoHoras() {
     };
 
     const guardar = async () => {
-        if (!formulario.nombre.trim() || !formulario.descripcion.trim()) return;
+        if (!formulario.nombre.trim() || !formulario.descripcion.trim()) {
+            alert('Por favor, completa todos los campos antes de guardar.');
+            return;
+        }
 
         try {
-            await axios.post(`${API}/crear_incumplimiento_horas.php`, {
+            await axios.post(`${endpoint}crear_incumplimiento_horas.php`, {
                 nombre: formulario.nombre,
                 descripcion: formulario.descripcion
             });
@@ -40,7 +44,7 @@ export default function IncumplimientoHoras() {
 
     const actualizar = async () => {
         try {
-            await axios.post(`${API}/editar_incumplimiento_horas.php`, formulario);
+            await axios.post(`${endpoint}editar_incumplimiento_horas.php`, formulario);
             setFormulario({ id: null, nombre: '', descripcion: '' });
             setModoEdicion(false);
             obtenerRegistros();
@@ -60,7 +64,7 @@ export default function IncumplimientoHoras() {
 
     const desactivar = async (id: number) => {
         try {
-            await axios.patch(`${API}/desactivar_incumplimiento_horas.php`, { id });
+            await axios.patch(`${endpoint}desactivar_incumplimiento_horas.php`, { id });
             obtenerRegistros();
         } catch (err) {
             console.error('Error al desactivar:', err);
@@ -69,7 +73,7 @@ export default function IncumplimientoHoras() {
 
     const activar = async (id: number) => {
         try {
-            await axios.patch(`${API}/activar_incumplimiento_horas.php`, { id });
+            await axios.patch(`${endpoint}activar_incumplimiento_horas.php`, { id });
             obtenerRegistros();
         } catch (err) {
             console.error('Error al activar:', err);
@@ -79,7 +83,7 @@ export default function IncumplimientoHoras() {
     const eliminar = async (id: number) => {
         if (!confirm('¿Estás seguro de eliminar este registro permanentemente?')) return;
         try {
-            await axios.delete(`${API}/eliminar_incumplimiento_horas.php`, {
+            await axios.delete(`${endpoint}eliminar_incumplimiento_horas.php`, {
                 data: { id }
             });
             obtenerRegistros();

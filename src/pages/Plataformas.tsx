@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import LayoutPrivado from '../components/LayoutPrivado';
 import axios from 'axios';
 import './Plataformas.css';
+import API from '../config';
 
 interface Plataforma {
     id?: number;
@@ -15,7 +16,7 @@ export default function Plataformas() {
     const [form, setForm] = useState<Partial<Plataforma>>({ nombre: '', descripcion: '' });
     const [modoEdicion, setModoEdicion] = useState(false);
 
-    const API_URL = 'http://localhost/calidad/calidad-backend/api/plataformas';
+    const API_URL = API + 'plataformas';
 
     useEffect(() => {
         obtenerPlataformas();

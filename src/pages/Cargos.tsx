@@ -2,32 +2,41 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import LayoutPrivado from '../components/LayoutPrivado';
 import './Cargos.css';
+import API from '../config';
 
-const API = 'http://localhost/calidad/calidad-backend/api/cargos';
+interface Cargo {
+    id: number;
+    nombre: string;
+    descripcion: string;
+    estatus: string;
+}
 
 export default function Cargos() {
-    const [cargos, setCargos] = useState([]);
-    const [formulario, setFormulario] = useState({ id: null, nombre: '', descripcion: '' });
+    const [cargos, setCargos] = useState<Cargo[]>([]);
+    const [formulario, setFormulario] = useState({ id: null as number | null, nombre: '', descripcion: '' });
     const [modoEdicion, setModoEdicion] = useState(false);
-
-    useEffect(() => {
-        obtenerCargos();
-    }, []);
 
     const obtenerCargos = async () => {
         try {
-            const res = await axios.get(`${API}/cargos.php`);
+            const res = await axios.get(`${API}cargos/cargos.php`);
             setCargos(res.data);
         } catch (err) {
             console.error('Error al obtener cargos:', err);
         }
     };
 
+    useEffect(() => {
+        obtenerCargos();
+    }, []);
+
     const guardar = async () => {
         if (!formulario.nombre.trim()) return;
 
         try {
-            await axios.post(`${API}/crear_cargo.php`, { nombre: formulario.nombre, descripcion: formulario.descripcion });
+            await axios.post(`${API}cargos/crear_cargo.php`, {
+                nombre: formulario.nombre,
+                descripcion: formulario.descripcion
+            });
             setFormulario({ id: null, nombre: '', descripcion: '' });
             obtenerCargos();
         } catch (err) {
@@ -35,14 +44,18 @@ export default function Cargos() {
         }
     };
 
-    const editar = (cargo: any) => {
+    const editar = (cargo: Cargo) => {
         setFormulario({ id: cargo.id, nombre: cargo.nombre, descripcion: cargo.descripcion });
         setModoEdicion(true);
     };
 
     const actualizar = async () => {
         try {
-            await axios.post(`${API}/editar_cargo.php`, { id: formulario.id, nombre: formulario.nombre, descripcion: formulario.descripcion });
+            await axios.post(`${API}cargos/editar_cargo.php`, {
+                id: formulario.id,
+                nombre: formulario.nombre,
+                descripcion: formulario.descripcion
+            });
             setFormulario({ id: null, nombre: '', descripcion: '' });
             setModoEdicion(false);
             obtenerCargos();
@@ -53,26 +66,26 @@ export default function Cargos() {
 
     const desactivar = async (id: number) => {
         try {
-            await axios.patch(`${API}/desactivar_cargo.php`, { id });
+            await axios.patch(`${API}cargos/desactivar_cargo.php`, { id });
             obtenerCargos();
         } catch (err) {
-            console.error('Error al desactivar:', err);
+            console.error('Error al desactivar cargo:', err);
         }
     };
 
     const activar = async (id: number) => {
         try {
-            await axios.patch(`${API}/activar_cargo.php`, { id });
+            await axios.patch(`${API}cargos/activar_cargo.php`, { id });
             obtenerCargos();
         } catch (err) {
-            console.error('Error al activar:', err);
+            console.error('Error al activar cargo:', err);
         }
     };
 
     const eliminar = async (id: number) => {
         if (!confirm('¿Estás seguro de eliminar este cargo permanentemente?')) return;
         try {
-            await axios.delete(`${API}/eliminar_cargo.php`, {
+            await axios.delete(`${API}cargos/eliminar_cargo.php`, {
                 data: { id }
             });
             obtenerCargos();
@@ -80,7 +93,6 @@ export default function Cargos() {
             console.error('Error al eliminar cargo:', err);
         }
     };
-
 
     return (
         <LayoutPrivado>
@@ -100,14 +112,13 @@ export default function Cargos() {
                         type="text"
                         placeholder="Descripción"
                         value={formulario.descripcion}
-                        onChange={(e) => setFormulario({ ...formulario, descripcion: e.target.value })}
+                        onChange={(e) =>
+                            setFormulario({ ...formulario, descripcion: e.target.value })
+                        }
                     />
-
-                    {modoEdicion ? (
-                        <button onClick={actualizar}>Actualizar</button>
-                    ) : (
-                        <button onClick={guardar}>Guardar</button>
-                    )}
+                    <button onClick={modoEdicion ? actualizar : guardar}>
+                        {modoEdicion ? 'Actualizar' : 'Guardar'}
+                    </button>
                 </div>
 
                 <table className="tabla">
@@ -120,25 +131,19 @@ export default function Cargos() {
                         </tr>
                     </thead>
                     <tbody>
-                        {cargos.map((c: any) => (
+                        {cargos.map((c) => (
                             <tr key={c.id}>
                                 <td>{c.nombre}</td>
                                 <td>{c.descripcion}</td>
                                 <td>{c.estatus}</td>
                                 <td>
-                                    <button className="btn-azul" onClick={() => editar(c)}>
-                                        Editar
-                                    </button>
+                                    <button className="btn-azul" onClick={() => editar(c)}>Editar</button>
                                     {c.estatus === 'activo' ? (
-                                        <button className="btn-rojo" onClick={() => desactivar(c.id)}>
-                                            Desactivar
-                                        </button>
+                                        <button className="btn-rojo" onClick={() => desactivar(c.id)}>Desactivar</button>
                                     ) : (
-                                        <button className="btn-verde" onClick={() => activar(c.id)}>
-                                            Activar
-                                        </button>
+                                        <button className="btn-verde" onClick={() => activar(c.id)}>Activar</button>
                                     )}
-                                    <button className="btn-rojo" onClick={() => eliminar(c.id)}>Eliminar    </button>
+                                    <button className="btn-rojo" onClick={() => eliminar(c.id)}>Eliminar</button>
                                 </td>
                             </tr>
                         ))}

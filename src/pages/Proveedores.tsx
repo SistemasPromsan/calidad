@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import LayoutPrivado from '../components/LayoutPrivado';
 import axios from 'axios';
 import './Proveedores.css';
+import API from '../config';
 
 interface Proveedor {
     id?: number;
@@ -15,7 +16,7 @@ export default function Proveedores() {
     const [form, setForm] = useState<Partial<Proveedor>>({ nombre: '', descripcion: '' });
     const [modoEdicion, setModoEdicion] = useState(false);
 
-    const API_URL = 'http://localhost/calidad/calidad-backend/api/proveedores';
+    const API_URL = API + 'proveedores';
 
     useEffect(() => {
         obtenerProveedores();

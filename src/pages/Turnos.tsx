@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import LayoutPrivado from '../components/LayoutPrivado';
 import axios from 'axios';
 import './Turnos.css';
+import API from '../config';
 
 interface Turno {
     id?: number;
@@ -15,7 +16,7 @@ export default function Turnos() {
     const [form, setForm] = useState<Partial<Turno>>({ nombre: '', descripcion: '' });
     const [modoEdicion, setModoEdicion] = useState(false);
 
-    const API_URL = 'http://localhost/calidad/calidad-backend/api/turnos';
+    const endpoint = `${API}turnos/`;
 
     useEffect(() => {
         obtenerTurnos();
@@ -23,13 +24,8 @@ export default function Turnos() {
 
     const obtenerTurnos = async () => {
         try {
-            const res = await axios.get(`${API_URL}/turnos.php`);
-            if (Array.isArray(res.data)) {
-                setTurnos(res.data);
-            } else {
-                setTurnos([]);
-                console.error('Respuesta inesperada:', res.data);
-            }
+            const res = await axios.get(`${endpoint}turnos.php`);
+            setTurnos(Array.isArray(res.data) ? res.data : []);
         } catch (err) {
             console.error('Error al obtener turnos:', err);
         }
@@ -42,7 +38,7 @@ export default function Turnos() {
 
     const guardar = async () => {
         try {
-            await axios.post(`${API_URL}/crear_turno.php`, form);
+            await axios.post(`${endpoint}crear_turno.php`, form);
             setForm({ nombre: '', descripcion: '' });
             obtenerTurnos();
         } catch (err) {
@@ -57,7 +53,7 @@ export default function Turnos() {
 
     const actualizar = async () => {
         try {
-            await axios.put(`${API_URL}/editar_turno.php`, form);
+            await axios.put(`${endpoint}editar_turno.php`, form);
             setModoEdicion(false);
             setForm({ nombre: '', descripcion: '' });
             obtenerTurnos();
@@ -68,7 +64,7 @@ export default function Turnos() {
 
     const desactivar = async (id: number) => {
         try {
-            await axios.patch(`${API_URL}/desactivar_turno.php`, { id });
+            await axios.patch(`${endpoint}desactivar_turno.php`, { id });
             obtenerTurnos();
         } catch (err) {
             console.error('Error al desactivar turno:', err);
@@ -77,7 +73,7 @@ export default function Turnos() {
 
     const activar = async (id: number) => {
         try {
-            await axios.patch(`${API_URL}/activar_turno.php`, { id });
+            await axios.patch(`${endpoint}activar_turno.php`, { id });
             obtenerTurnos();
         } catch (err) {
             console.error('Error al activar turno:', err);
@@ -88,7 +84,7 @@ export default function Turnos() {
         const confirmar = window.confirm('¿Eliminar este turno permanentemente?');
         if (!confirmar) return;
         try {
-            await axios.delete(`${API_URL}/eliminar_turno.php`, {
+            await axios.delete(`${endpoint}eliminar_turno.php`, {
                 data: { id },
             });
             obtenerTurnos();

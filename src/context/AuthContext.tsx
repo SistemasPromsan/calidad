@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import API from '../config';
 
 // Tipo de datos del usuario
 type Usuario = {
@@ -40,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             const intervalo = setInterval(async () => {
                 try {
-                    const res = await axios.post('http://localhost/calidad/calidad-backend/api/verificar_estado.php', {
+                    const res = await axios.post(API + 'verificar_estado.php', {
                         id: user.id,
                     });
                     console.log('Estado recibido:', res.data.estado);

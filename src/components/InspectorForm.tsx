@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import API from '../config';
 
 type Inspector = {
     id?: number;
-    inspector: string;
+    nombre: string;
     descripcion: string;
     estatus?: string;
 };
@@ -16,7 +17,7 @@ type Props = {
 
 export default function InspectorForm({ inspector, onSuccess, onClose }: Props) {
     const [form, setForm] = useState<Inspector>({
-        inspector: '',
+        nombre: '',
         descripcion: ''
     });
 
@@ -26,7 +27,7 @@ export default function InspectorForm({ inspector, onSuccess, onClose }: Props) 
     useEffect(() => {
         if (inspector) {
             setForm({
-                inspector: inspector.inspector,
+                nombre: inspector.nombre,
                 descripcion: inspector.descripcion
             });
         }
@@ -40,7 +41,7 @@ export default function InspectorForm({ inspector, onSuccess, onClose }: Props) 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!form.inspector.trim()) {
+        if (!form.nombre.trim()) {
             alert('El nombre del inspector es obligatorio.');
             return;
         }
@@ -49,8 +50,8 @@ export default function InspectorForm({ inspector, onSuccess, onClose }: Props) 
 
         try {
             const url = isEditing
-                ? 'http://localhost/calidad/calidad-backend/api/inspectores/editar_inspector.php'
-                : 'http://localhost/calidad/calidad-backend/api/inspectores/crear_inspector.php';
+                ? API + 'inspectores/editar_inspector.php'
+                : API + 'inspectores/crear_inspector.php';
 
             const payload = isEditing
                 ? { id: inspector!.id, ...form }
@@ -93,8 +94,8 @@ export default function InspectorForm({ inspector, onSuccess, onClose }: Props) 
                     <label>Nombre del Inspector</label>
                     <input
                         type="text"
-                        name="inspector"
-                        value={form.inspector}
+                        name="nombre"
+                        value={form.nombre}
                         onChange={handleChange}
                         required
                         style={{ width: '100%', padding: '8px' }}

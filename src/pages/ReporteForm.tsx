@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import LayoutPrivado from '../components/LayoutPrivado';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import API from '../config';
 
 export default function ReporteForm() {
     const [form, setForm] = useState({
@@ -46,11 +47,11 @@ export default function ReporteForm() {
     const [motivosIncumplimiento, setMotivosIncumplimiento] = useState<any[]>([]);
 
     useEffect(() => {
-        axios.get('http://localhost/calidad/calidad-backend/api/turnos/turnos.php').then(res => setTurnos(res.data));
-        axios.get('http://localhost/calidad/calidad-backend/api/inspectores/inspectores.php').then(res => setInspectores(res.data));
-        axios.get('http://localhost/calidad/calidad-backend/api/num_partes/num_partes.php').then(res => setNumPartes(res.data));
-        axios.get('http://localhost/calidad/calidad-backend/api/cargos/cargos.php').then(res => setCargos(res.data));
-        axios.get('http://localhost/calidad/calidad-backend/api/incumplimiento_horas/incumplimiento_horas.php').then(res => setMotivosIncumplimiento(res.data));
+        axios.get(API + 'turnos/turnos.php').then(res => setTurnos(res.data));
+        axios.get(API + 'inspectores/inspectores.php').then(res => setInspectores(res.data));
+        axios.get(API + 'num_partes/num_partes.php').then(res => setNumPartes(res.data));
+        axios.get(API + 'cargos/cargos.php').then(res => setCargos(res.data));
+        axios.get(API + 'incumplimiento_horas/incumplimiento_horas.php').then(res => setMotivosIncumplimiento(res.data));
     }, []);
 
     useEffect(() => {
@@ -92,7 +93,7 @@ export default function ReporteForm() {
                 total_horas: totalHoras.toFixed(2),
                 id_usuario: 1
             };
-            await axios.post('http://localhost/calidad/calidad-backend/api/reportes/crear_reporte.php', datos);
+            await axios.post(API + 'reportes/crear_reporte.php', datos);
             alert('Reporte guardado exitosamente');
         } catch (error) {
             console.error('Error al guardar:', error);

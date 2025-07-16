@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import LayoutPrivado from '../components/LayoutPrivado';
 import axios from 'axios';
 import './Retrabajos.css';
+import API from '../config';
 
 interface Retrabajo {
     id?: number;
@@ -15,7 +16,7 @@ export default function Retrabajos() {
     const [form, setForm] = useState<Partial<Retrabajo>>({ nombre: '', descripcion: '' });
     const [modoEdicion, setModoEdicion] = useState(false);
 
-    const API_URL = 'http://localhost/calidad/calidad-backend/api/retrabajos';
+    const endpoint = `${API}retrabajos/`;
 
     useEffect(() => {
         obtenerRetrabajos();
@@ -23,13 +24,8 @@ export default function Retrabajos() {
 
     const obtenerRetrabajos = async () => {
         try {
-            const res = await axios.get(`${API_URL}/retrabajos.php`);
-            if (Array.isArray(res.data)) {
-                setRetrabajos(res.data);
-            } else {
-                setRetrabajos([]);
-                console.error('Respuesta inesperada:', res.data);
-            }
+            const res = await axios.get(`${endpoint}retrabajos.php`);
+            setRetrabajos(Array.isArray(res.data) ? res.data : []);
         } catch (err) {
             console.error('Error al obtener retrabajos:', err);
         }
@@ -42,7 +38,7 @@ export default function Retrabajos() {
 
     const guardar = async () => {
         try {
-            await axios.post(`${API_URL}/crear_retrabajo.php`, form);
+            await axios.post(`${endpoint}crear_retrabajo.php`, form);
             setForm({ nombre: '', descripcion: '' });
             obtenerRetrabajos();
         } catch (err) {
@@ -57,7 +53,7 @@ export default function Retrabajos() {
 
     const actualizar = async () => {
         try {
-            await axios.put(`${API_URL}/editar_retrabajo.php`, form);
+            await axios.put(`${endpoint}editar_retrabajo.php`, form);
             setModoEdicion(false);
             setForm({ nombre: '', descripcion: '' });
             obtenerRetrabajos();
@@ -68,7 +64,7 @@ export default function Retrabajos() {
 
     const desactivar = async (id: number) => {
         try {
-            await axios.patch(`${API_URL}/desactivar_retrabajo.php`, { id });
+            await axios.patch(`${endpoint}desactivar_retrabajo.php`, { id });
             obtenerRetrabajos();
         } catch (err) {
             console.error('Error al desactivar retrabajo:', err);
@@ -77,7 +73,7 @@ export default function Retrabajos() {
 
     const activar = async (id: number) => {
         try {
-            await axios.patch(`${API_URL}/activar_retrabajo.php`, { id });
+            await axios.patch(`${endpoint}activar_retrabajo.php`, { id });
             obtenerRetrabajos();
         } catch (err) {
             console.error('Error al activar retrabajo:', err);
@@ -88,7 +84,7 @@ export default function Retrabajos() {
         const confirmar = window.confirm('¿Eliminar este retrabajo permanentemente?');
         if (!confirmar) return;
         try {
-            await axios.delete(`${API_URL}/eliminar_retrabajo.php`, {
+            await axios.delete(`${endpoint}eliminar_retrabajo.php`, {
                 data: { id },
             });
             obtenerRetrabajos();

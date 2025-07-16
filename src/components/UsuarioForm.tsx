@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import './UsuarioForm.css';
+import API from '../config';
 
 type Props = {
     usuario?: any;
@@ -36,8 +38,8 @@ export default function UsuarioForm({ usuario, onSuccess, onClose }: Props) {
         e.preventDefault();
         try {
             const url = usuario
-                ? 'http://localhost/calidad/calidad-backend/api/actualizar_usuario.php'
-                : 'http://localhost/calidad/calidad-backend/api/crear_usuario.php';
+                ? API + 'usuarios/actualizar_usuario.php'
+                : API + 'usuarios/crear_usuario.php';
 
             const data = usuario ? { ...form, id: usuario.id } : form;
 

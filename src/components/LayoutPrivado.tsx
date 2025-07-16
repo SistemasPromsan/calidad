@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './LayoutPrivado.css';
 
+
 export default function LayoutPrivado({ children }: { children: ReactNode }) {
     const { logout, usuario } = useAuth();
 

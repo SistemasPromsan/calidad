@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import LayoutPrivado from '../components/LayoutPrivado';
 import axios from 'axios';
 import './Defectos.css';
+import API from '../config';
 
 interface Defecto {
     id?: number;
@@ -15,21 +16,14 @@ export default function Defectos() {
     const [form, setForm] = useState<Partial<Defecto>>({ nombre: '', descripcion: '' });
     const [modoEdicion, setModoEdicion] = useState(false);
 
-    const API_URL = 'http://localhost/calidad/calidad-backend/api/defectos';
-
     useEffect(() => {
         obtenerDefectos();
     }, []);
 
     const obtenerDefectos = async () => {
         try {
-            const res = await axios.get(`${API_URL}/defectos.php`);
-            if (Array.isArray(res.data)) {
-                setDefectos(res.data);
-            } else {
-                setDefectos([]);
-                console.error('Respuesta inesperada:', res.data);
-            }
+            const res = await axios.get(`${API}defectos/defectos.php`);
+            setDefectos(Array.isArray(res.data) ? res.data : []);
         } catch (err) {
             console.error('Error al obtener defectos:', err);
         }
@@ -42,7 +36,7 @@ export default function Defectos() {
 
     const guardar = async () => {
         try {
-            await axios.post(`${API_URL}/crear_defecto.php`, form);
+            await axios.post(`${API}defectos/crear_defecto.php`, form);
             setForm({ nombre: '', descripcion: '' });
             obtenerDefectos();
         } catch (err) {
@@ -57,43 +51,42 @@ export default function Defectos() {
 
     const actualizar = async () => {
         try {
-            await axios.put(`${API_URL}/editar_defecto.php`, form);
+            await axios.post(`${API}defectos/editar_defecto.php`, form);
             setModoEdicion(false);
             setForm({ nombre: '', descripcion: '' });
             obtenerDefectos();
         } catch (err) {
-            console.error('Error al actualizar:', err);
+            console.error('Error al actualizar defecto:', err);
         }
     };
 
     const desactivar = async (id: number) => {
         try {
-            await axios.patch(`${API_URL}/desactivar_defecto.php`, { id });
+            await axios.patch(`${API}defectos/desactivar_defecto.php`, { id });
             obtenerDefectos();
         } catch (err) {
-            console.error('Error al desactivar:', err);
+            console.error('Error al desactivar defecto:', err);
         }
     };
 
     const activar = async (id: number) => {
         try {
-            await axios.patch(`${API_URL}/activar_defecto.php`, { id });
+            await axios.patch(`${API}defectos/activar_defecto.php`, { id });
             obtenerDefectos();
         } catch (err) {
-            console.error('Error al activar:', err);
+            console.error('Error al activar defecto:', err);
         }
     };
 
     const eliminar = async (id: number) => {
-        const confirmar = window.confirm('¿Eliminar este defecto permanentemente?');
-        if (!confirmar) return;
+        if (!confirm('¿Eliminar este defecto permanentemente?')) return;
         try {
-            await axios.delete(`${API_URL}/eliminar_defecto.php`, {
+            await axios.delete(`${API}defectos/eliminar_defecto.php`, {
                 data: { id },
             });
             obtenerDefectos();
         } catch (err) {
-            console.error('Error al eliminar:', err);
+            console.error('Error al eliminar defecto:', err);
         }
     };
 
