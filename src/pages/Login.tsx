@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import API from '../config';
+import.meta.env.VITE_API_URL
 
 
 export default function Login() {
@@ -14,9 +14,11 @@ export default function Login() {
         e.preventDefault();
 
         try {
-            const res = await axios.post(API + 'login.php', {
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/login.php`, {
                 username,
                 password
+            }, {
+                withCredentials: false
             });
 
             if (res.data.success) {

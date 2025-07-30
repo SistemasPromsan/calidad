@@ -1,65 +1,47 @@
-.formulario {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
+/* Asegura que el layout se use completamente */
+.container-fluid {
+    padding-left: 2rem;
+    padding-right: 2rem;
 }
 
-.formulario label {
-  display: flex;
-  flex-direction: column;
-  font-weight: 500;
-  font-size: 0.95rem;
+/* Estilo para la tabla que elimina el scroll horizontal */
+.table-responsive {
+    overflow-x: auto;
+    width: 100%;
 }
 
-.formulario input,
-.formulario select,
-.formulario textarea {
-  padding: 0.5rem;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  width: 100%;
-  box-sizing: border-box;
+/* Asegura que los selects y inputs dentro de la tabla se ajusten */
+.table td, .table th {
+    vertical-align: middle;
+    padding: 0.5rem;
+    min-width: 120px;
 }
 
-.formulario textarea {
-  resize: vertical;
-  min-height: 70px;
+.table td select,
+.table td input {
+    width: 100%;
+    min-width: 100px;
 }
 
-.formulario button {
-  grid-column: span 2;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  background-color: #007bff;
-  border: none;
-  color: white;
-  border-radius: 6px;
-  cursor: pointer;
-  width: fit-content;
-  justify-self: end;
+/* Encabezados centrados y bien visibles */
+.table th {
+    text-align: center;
+    background-color: #f8f9fa;
+    font-weight: 600;
+    white-space: nowrap;
 }
 
-.checkpoint-box {
-  grid-column: span 2;
-  margin-top: 1rem;
-  padding: 1rem;
-  background-color: #f2f2f2;
-  border: 1px solid #ccc;
-  border-radius: 8px;
+/* Botones con margen y tamaño uniforme */
+.btn {
+    min-width: 160px;
 }
 
-.checkpoint-box label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: normal;
+h2, h5 {
+    font-weight: bold;
 }
 
-.select-label {
-  font-weight: 500;
-  margin-top: 0.75rem;
-  display: block;
+/* Ajustes de inputs tipo hora */
+input[type="time"] {
+    min-width: 100px;
+    text-align: center;
 }

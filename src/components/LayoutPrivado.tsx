@@ -29,6 +29,8 @@ export default function LayoutPrivado({ children }: { children: ReactNode }) {
                     <Link to="/cargos">Cargos</Link>
                     <Link to="/incumplimientohoras">Incumplimientos Horas</Link>
                     <Link to="/reporteform">Reportes</Link>
+                    <Link to="/reportes-list">Reportes List</Link>
+                    <Link to="/supervisores">Supervisores</Link>
                 </nav>
                 <button onClick={logout} className="logout">Cerrar sesión</button>
             </aside>

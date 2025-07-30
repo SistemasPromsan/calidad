@@ -18,6 +18,11 @@ import Turnos from './pages/Turnos';
 import Cargos from './pages/Cargos';
 import ReporteForm from './pages/ReporteForm';
 import Incumplimientohoras from './pages/IncumplimientoHoras';
+import TestConexion from './pages/TestConexion';
+import Supervisores from './pages/Supervisores';
+import ReportesList from './pages/ReportesList';
+import ReporteDetalle from './pages/ReporteDetalle';
+import ReporteEditar from './pages/ReporteEditar';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -85,6 +90,28 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               <ReporteForm />
             </RutasProtegidas>
           } />
+          <Route path="/supervisores" element={
+            <RutasProtegidas>
+              <Supervisores />
+            </RutasProtegidas>
+          } />
+          <Route path="/reportes-list" element={
+            <RutasProtegidas>
+              <ReportesList />
+            </RutasProtegidas>
+          } />
+          <Route path="/reporte/:id" element={
+            <RutasProtegidas>
+              <ReporteDetalle />
+            </RutasProtegidas>
+          } />
+          <Route path="/reporte-editar" element={
+            <RutasProtegidas>
+              <ReporteEditar />
+            </RutasProtegidas>
+          } />
+
+          <Route path="/test-conexion" element={<TestConexion />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

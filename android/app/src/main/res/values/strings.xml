@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">calidad-frontend</string>
+    <string name="title_activity_main">calidad-frontend</string>
+    <string name="package_name">com.promsan.calidad</string>
+    <string name="custom_url_scheme">com.promsan.calidad</string>
+</resources>
