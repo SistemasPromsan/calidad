@@ -12,11 +12,14 @@ interface Inspeccion {
     cargo: string;
     lpn: string;
     lote: string;
+    total_retrabajos: string;
     hora_inicio: string;
     hora_fin: string;
-    piezas_inspeccionadas: number;
-    piezas_ok: number;
-    piezas_no_ok: number;
+    piezas_inspeccionadas: string | number;
+    piezas_ok: string | number;
+    piezas_no_ok: string | number;
+    observaciones: string;
+    horas_extras: string | number;
     minutos?: number;
     lista_proveedores?: any[];
     retrabajos: Array<{ id_retrabajo: string; id_defecto: string; cantidad: number }>;
@@ -31,28 +34,44 @@ interface FormData {
     id_usuario: number;
     inspecciones: Inspeccion[];
     horas_trabajadas: number;
+    horas_extras: number;
 }
 
-const ReporteForm = () => {
-    const [catalogos, setCatalogos] = useState<any>({});
-    const [form, setForm] = useState<FormData>({
-        fecha: new Date().toISOString().split("T")[0],
-        id_turno: "",
-        id_inspector: "",
-        id_supervisor: "",
-        id_usuario: 1, // ID del usuario logueado (simulado)
-        inspecciones: [],
-        horas_trabajadas: 0
+interface ReporteFormProps {
+    initialData?: any;
+    catalogos?: any;
+    onSubmit?: (formData: any) => void;
+    modo?: string;
+}
+
+const ReporteForm = ({ initialData, catalogos: propCatalogos, onSubmit, modo }: ReporteFormProps = {}) => {
+    const [catalogos, setCatalogos] = useState<any>(propCatalogos || {});
+    const [form, setForm] = useState<FormData>(() => {
+        const data = initialData || {
+            fecha: new Date().toISOString().split("T")[0],
+            id_turno: "",
+            id_inspector: "",
+            id_supervisor: "",
+            id_usuario: 1,
+            inspecciones: [],
+            horas_trabajadas: 0,
+            horas_extras: 0
+        };
+
+        data.horas_trabajadas = Number(data.horas_trabajadas || 0) // Asegura que sea un número
+        return data;
     });
 
     const [showConfirm, setShowConfirm] = useState(false);
     const [mensaje, setMensaje] = useState("");
 
     useEffect(() => {
-        axios
-            .get(`${API_URL}/reportes/obtener_catalogos.php`)
-            .then((res) => setCatalogos(res.data));
-    }, []);
+        if (!propCatalogos) {
+            axios
+                .get(`${API_URL}/reportes/obtener_catalogos.php`)
+                .then((res) => setCatalogos(res.data));
+        }
+    }, [propCatalogos]);
 
     const handleAddInspeccion = () => {
         setForm({
@@ -67,11 +86,14 @@ const ReporteForm = () => {
                     cargo: "",
                     lpn: "",
                     lote: "",
+                    total_retrabajos: "",
                     hora_inicio: "",
                     hora_fin: "",
-                    piezas_inspeccionadas: 0,
-                    piezas_ok: 0,
-                    piezas_no_ok: 0,
+                    piezas_inspeccionadas: "",
+                    piezas_ok: "",
+                    piezas_no_ok: "",
+                    observaciones: "",
+                    horas_extras: "",
                     lista_proveedores: [],
                     retrabajos: [],
                     rechazos: []
@@ -94,13 +116,27 @@ const ReporteForm = () => {
             updated[index].lista_proveedores = proveedores;
         }
 
+        // 👉 Validar total_retrabajos
+        if (field === "total_retrabajos") {
+            const total = value === "" ? 0 : parseInt(value);
+            updated[index].total_retrabajos = total.toString();
 
-        // Calcular no OK
-        const inspeccionadas = parseInt(updated[index].piezas_inspeccionadas?.toString() || "0");
-        const ok = parseInt(updated[index].piezas_ok?.toString() || "0");
-        updated[index].piezas_no_ok = Math.max(inspeccionadas - ok, 0);
+            if (total === 0) {
+                updated[index].retrabajos = [];
+            }
+        }
 
-        // Calcular horas
+        // Calcular piezas OK automáticamente si cambia inspeccionadas o no_ok
+        if (field === "piezas_inspeccionadas" || field === "piezas_no_ok") {
+            const inspeccionadas = parseInt(updated[index].piezas_inspeccionadas?.toString() || "0");
+            const noOk = parseInt(updated[index].piezas_no_ok?.toString() || "0");
+
+            updated[index].piezas_ok = Math.max(inspeccionadas - noOk, 0);
+        }
+
+
+
+        // Calcular minutos trabajados
         if (updated[index].hora_inicio && updated[index].hora_fin) {
             const ini = new Date(`2000-01-01T${updated[index].hora_inicio}`);
             const fin = new Date(`2000-01-01T${updated[index].hora_fin}`);
@@ -110,12 +146,13 @@ const ReporteForm = () => {
             }
         }
 
-        // Calcular horas totales
+        // Calcular total horas trabajadas
         const totalMin = updated.reduce((sum, ins) => sum + (ins.minutos || 0), 0);
         const totalHoras = +(totalMin / 60).toFixed(2);
 
-        setForm({ ...form, inspecciones: updated, horas_trabajadas: totalHoras });
+        setForm({ ...form, inspecciones: updated, horas_trabajadas: totalHoras, horas_extras: totalHoras - 8 });
     };
+
 
     const handleRemoveInspeccion = (index: number) => {
         const updated = [...form.inspecciones];
@@ -123,7 +160,7 @@ const ReporteForm = () => {
         const totalMin = updated.reduce((sum, ins) => sum + (ins.minutos || 0), 0);
         const totalHoras = +(totalMin / 60).toFixed(2);
 
-        setForm({ ...form, inspecciones: updated, horas_trabajadas: totalHoras });
+        setForm({ ...form, inspecciones: updated, horas_trabajadas: totalHoras, horas_extras: totalHoras - 8 });
     };
 
 
@@ -144,13 +181,6 @@ const ReporteForm = () => {
         const updated = [...form.inspecciones];
         (updated[index][tipo][i] as any)[field] = value;
         setForm({ ...form, inspecciones: updated });
-    };
-
-    const validarCantidadMotivos = (insp: any) => {
-        const totalMotivos =
-            insp.retrabajos.reduce((sum: number, r: any) => sum + parseInt(r.cantidad || 0), 0) +
-            insp.rechazos.reduce((sum: number, d: any) => sum + parseInt(d.cantidad || 0), 0);
-        return totalMotivos <= insp.piezas_no_ok;
     };
 
 
@@ -178,6 +208,20 @@ const ReporteForm = () => {
                 return false;
             }
 
+            const noOk = Number(ins.piezas_no_ok || 0);
+            const totalRechazos = ins.rechazos?.reduce((sum, r) => sum + Number(r.cantidad || 0), 0) || 0;
+
+            // Nueva validación: Rechazos deben justificar los NO OK
+            if (noOk > 0 && totalRechazos === 0) {
+                alert(`La inspección #${i + 1} tiene piezas NO OK sin registrar motivos de rechazo.`);
+                return false;
+            }
+
+            if (noOk > 0 && totalRechazos !== noOk) {
+                alert(`La suma de rechazos debe ser igual a las piezas NO OK en inspección #${i + 1}`);
+                return false;
+            }
+
             // Validar retrabajos
             for (let r of ins.retrabajos) {
                 if (!r.id_retrabajo || !r.cantidad || parseInt(r.cantidad.toString()) <= 0) {
@@ -200,15 +244,22 @@ const ReporteForm = () => {
 
 
 
+
     const handleGuardar = () => {
         if (!validarFormulario()) {
             return;
         }
 
-        if (!form.inspecciones.every(validarCantidadMotivos)) {
-            alert("¡Error! La suma de rechazos y retrabajos excede las piezas No OK.");
+        if (onSubmit) {
+            onSubmit(form);
             return;
         }
+
+        // Ya no se usa esta validación porque ahora solo se validan rechazos en validarFormulario()
+        // if (!form.inspecciones.every(validarCantidadMotivos)) {
+        //     alert("¡Error! La suma de rechazos y retrabajos excede las piezas No OK.");
+        //     return;
+        // }
 
         axios
             .post(`${API_URL}/reportes/crear_reporte.php`, form)
@@ -221,11 +272,13 @@ const ReporteForm = () => {
                     id_supervisor: "",
                     id_usuario: 1,
                     inspecciones: [],
-                    horas_trabajadas: 0
+                    horas_trabajadas: 0,
+                    horas_extras: 0
                 });
             })
             .catch(() => setMensaje("Error al guardar el reporte."));
     };
+
 
 
     return (
@@ -312,10 +365,22 @@ const ReporteForm = () => {
                                         Debes cumplir al menos 8 horas trabajadas para guardar el reporte.
                                     </div>
                                 )}
-
                             </Form.Group>
                         </Col>
+
+                        <Col md={3}>
+                            <Form.Group>
+                                <Form.Label>Horas extras</Form.Label>
+                                <Form.Control
+                                    value={Number(form.horas_extras || 0).toFixed(2)}
+                                    disabled
+                                    className="fw-bold"
+                                />
+                            </Form.Group>
+                        </Col>
+
                     </Row>
+
 
                     <hr />
                     <h5>Inspecciones</h5>
@@ -377,9 +442,6 @@ const ReporteForm = () => {
                                         }
                                     />
                                 </Col>
-                            </Row>
-
-                            <Row className="mt-2">
                                 <Col md={3}>
                                     <Form.Label>Hora inicio</Form.Label>
                                     <Form.Control
@@ -400,33 +462,69 @@ const ReporteForm = () => {
                                         }
                                     />
                                 </Col>
-                                <Col md={2}>
+
+                            </Row>
+
+                            <Row className="mt-2">
+
+                                <Col md={3}>
+                                    <Form.Label>Total retrabajos</Form.Label>
+                                    <Form.Control
+                                        type="number"
+                                        min="0"
+                                        value={insp.total_retrabajos === 0 ? 0 : insp.total_retrabajos || ""}
+                                        onChange={(e) =>
+                                            handleChangeInspeccion(idx, "total_retrabajos", e.target.value)
+                                        }
+                                    />
+                                </Col>
+
+                                <Col md={3}>
                                     <Form.Label>Pzas inspeccionadas</Form.Label>
                                     <Form.Control
                                         type="number"
-                                        value={insp.piezas_inspeccionadas}
+                                        min="0"
+                                        value={insp.piezas_inspeccionadas ?? ""}
                                         onChange={(e) =>
                                             handleChangeInspeccion(idx, "piezas_inspeccionadas", e.target.value)
                                         }
                                     />
                                 </Col>
-                                <Col md={2}>
+                                <Col md={3}>
+                                    <Form.Label>No OK</Form.Label>
+                                    <Form.Control
+                                        type="number"
+                                        value={insp.piezas_no_ok ?? ""}
+                                        onChange={(e) =>
+                                            handleChangeInspeccion(idx, "piezas_no_ok", e.target.value)
+                                        }
+                                    />
+                                </Col>
+                                <Col md={3}>
                                     <Form.Label>Pzas OK</Form.Label>
                                     <Form.Control
                                         type="number"
                                         value={insp.piezas_ok}
-                                        onChange={(e) =>
-                                            handleChangeInspeccion(idx, "piezas_ok", e.target.value)
-                                        }
+                                        disabled // ← ahora es calculado automáticamente
                                     />
-                                </Col>
-                                <Col md={2}>
-                                    <Form.Label>No OK</Form.Label>
-                                    <Form.Control value={insp.piezas_no_ok} disabled />
                                 </Col>
                             </Row>
 
-                            {insp.piezas_no_ok > 0 && (
+                            <Row className="mt-2">
+                                <Col md={12}>
+                                    <Form.Label>Observaciones</Form.Label>
+                                    <Form.Control
+                                        as="textarea"
+                                        rows={2}
+                                        value={insp.observaciones || ""}
+                                        onChange={(e) => handleChangeInspeccion(idx, "observaciones", e.target.value)}
+                                    />
+                                </Col>
+                            </Row>
+
+
+                            {/* Mostrar RETRABAJOS si total_retrabajos > 0 */}
+                            {parseInt(insp.total_retrabajos || "0") > 0 && (
                                 <>
                                     <hr />
                                     <Row>
@@ -437,7 +535,8 @@ const ReporteForm = () => {
                                                     <Col md={4}>
                                                         <Form.Control
                                                             type="number"
-                                                            value={r.cantidad}
+                                                            min="0"
+                                                            value={r.cantidad ?? ""}
                                                             onChange={(e) =>
                                                                 handleChangeMotivo(idx, "retrabajos", i, "cantidad", e.target.value)
                                                             }
@@ -445,7 +544,7 @@ const ReporteForm = () => {
                                                     </Col>
                                                     <Col md={6}>
                                                         <Form.Select
-                                                            value={r.id_retrabajo}
+                                                            value={r.id_retrabajo ?? ""}
                                                             onChange={(e) =>
                                                                 handleChangeMotivo(idx, "retrabajos", i, "id_retrabajo", e.target.value)
                                                             }
@@ -467,9 +566,24 @@ const ReporteForm = () => {
                                                     </Col>
                                                 </Row>
                                             ))}
-                                            <Button variant="secondary" size="sm" className="mt-2" onClick={() => handleAddMotivo(idx, "retrabajos")}>+ Agregar retrabajo</Button>
+                                            <Button
+                                                variant="secondary"
+                                                size="sm"
+                                                className="mt-2"
+                                                onClick={() => handleAddMotivo(idx, "retrabajos")}
+                                            >
+                                                + Agregar retrabajo
+                                            </Button>
                                         </Col>
+                                    </Row>
+                                </>
+                            )}
 
+                            {/* Mostrar RECHAZOS si piezas_no_ok > 0 */}
+                            {parseInt(insp.piezas_no_ok || "0") > 0 && (
+                                <>
+                                    <hr />
+                                    <Row>
                                         <Col>
                                             <h6>Rechazos</h6>
                                             {insp.rechazos.map((d: any, i: number) => (
@@ -477,7 +591,8 @@ const ReporteForm = () => {
                                                     <Col md={4}>
                                                         <Form.Control
                                                             type="number"
-                                                            value={d.cantidad}
+                                                            min="0"
+                                                            value={d.cantidad ?? ""}
                                                             onChange={(e) =>
                                                                 handleChangeMotivo(idx, "rechazos", i, "cantidad", e.target.value)
                                                             }
@@ -485,7 +600,7 @@ const ReporteForm = () => {
                                                     </Col>
                                                     <Col md={6}>
                                                         <Form.Select
-                                                            value={d.id_defecto}
+                                                            value={d.id_defecto ?? ""}
                                                             onChange={(e) =>
                                                                 handleChangeMotivo(idx, "rechazos", i, "id_defecto", e.target.value)
                                                             }
@@ -507,12 +622,20 @@ const ReporteForm = () => {
                                                     </Col>
                                                 </Row>
                                             ))}
-
-                                            <Button variant="secondary" size="sm" className="mt-2" onClick={() => handleAddMotivo(idx, "rechazos")}>+ Agregar rechazo</Button>
+                                            <Button
+                                                variant="secondary"
+                                                size="sm"
+                                                className="mt-2"
+                                                onClick={() => handleAddMotivo(idx, "rechazos")}
+                                            >
+                                                + Agregar rechazo
+                                            </Button>
                                         </Col>
                                     </Row>
                                 </>
                             )}
+
+
                             <div className="text-end mt-2">
                                 <Button
                                     variant="danger"

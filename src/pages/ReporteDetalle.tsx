@@ -61,6 +61,8 @@ export default function ReporteDetalle() {
                         <p><strong>Lote:</strong> {insp.lote}</p>
                         <p><strong>Hora inicio:</strong> {insp.hora_inicio} / <strong>Hora fin:</strong> {insp.hora_fin}</p>
                         <p><strong>Pzas inspeccionadas:</strong> {insp.piezas_inspeccionadas}, <strong>OK:</strong> {insp.piezas_ok}, <strong>No OK:</strong> {insp.piezas_no_ok}</p>
+                        <p><strong>Total retrabajos:</strong> {insp.total_retrabajos}</p>
+                        <p><strong>Observaciones:</strong> {insp.observaciones}</p>
 
                         <h6>Retrabajos</h6>
                         <ul>
