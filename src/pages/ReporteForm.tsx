@@ -429,7 +429,7 @@ const ReporteForm = ({ initialData, catalogos: propCatalogos, onSubmit }: Report
                                         }
                                     />
                                 </Col>*/}
-                                <Col md={3}>
+                                <Col md={2}>
                                     <Form.Label>Eaton LPN</Form.Label>
                                     <Form.Control
                                         value={insp.lpn}
@@ -438,7 +438,7 @@ const ReporteForm = ({ initialData, catalogos: propCatalogos, onSubmit }: Report
                                         }
                                     />
                                 </Col>
-                                <Col md={3}>
+                                <Col md={2}>
                                     <Form.Label>Lote</Form.Label>
                                     <Form.Control
                                         value={insp.lote}
@@ -446,6 +446,19 @@ const ReporteForm = ({ initialData, catalogos: propCatalogos, onSubmit }: Report
                                             handleChangeInspeccion(idx, "lote", e.target.value)
                                         }
                                     />
+                                </Col>
+                                <Col md={2}>
+                                    <Form.Label>Cargo</Form.Label>
+                                    <Form.Select
+                                        required
+                                        value={insp.cargo}
+                                        onChange={(e) => handleChangeInspeccion(idx, "cargo", e.target.value)}
+                                    >
+                                        <option value="">-- Selecciona --</option>
+                                        <option value="interno">Interno</option>
+                                        <option value="externo">Externo</option>
+                                    </Form.Select>
+
                                 </Col>
                                 <Col md={3}>
                                     <Form.Label>Hora inicio</Form.Label>
