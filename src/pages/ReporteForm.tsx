@@ -44,7 +44,7 @@ interface ReporteFormProps {
     modo?: string;
 }
 
-const ReporteForm = ({ initialData, catalogos: propCatalogos, onSubmit, modo }: ReporteFormProps = {}) => {
+const ReporteForm = ({ initialData, catalogos: propCatalogos, onSubmit }: ReporteFormProps = {}) => {
     const [catalogos, setCatalogos] = useState<any>(propCatalogos || {});
     const [form, setForm] = useState<FormData>(() => {
         const data = initialData || {
@@ -136,21 +136,26 @@ const ReporteForm = ({ initialData, catalogos: propCatalogos, onSubmit, modo }: 
 
 
 
-        // Calcular minutos trabajados
+        // Calcular minutos trabajados por inspección
         if (updated[index].hora_inicio && updated[index].hora_fin) {
             const ini = new Date(`2000-01-01T${updated[index].hora_inicio}`);
-            const fin = new Date(`2000-01-01T${updated[index].hora_fin}`);
-            const diffMin = (fin.getTime() - ini.getTime()) / 60000;
-            if (!isNaN(diffMin) && diffMin > 0) {
-                updated[index].minutos = diffMin;
+            let fin = new Date(`2000-01-01T${updated[index].hora_fin}`);
+
+            // Si la hora de fin es menor que la de inicio, significa que pasó a otro día
+            if (fin < ini) {
+                fin.setDate(fin.getDate() + 1);
             }
+
+            const diffMin = (fin.getTime() - ini.getTime()) / 60000;
+            updated[index].minutos = isNaN(diffMin) ? 0 : diffMin;
         }
 
-        // Calcular total horas trabajadas
+        // Calcular total de horas trabajadas y horas extras
         const totalMin = updated.reduce((sum, ins) => sum + (ins.minutos || 0), 0);
         const totalHoras = +(totalMin / 60).toFixed(2);
+        const horasExtras = totalHoras > 8 ? +(totalHoras - 8).toFixed(2) : 0;
 
-        setForm({ ...form, inspecciones: updated, horas_trabajadas: totalHoras, horas_extras: totalHoras - 8 });
+        setForm({ ...form, inspecciones: updated, horas_trabajadas: totalHoras, horas_extras: horasExtras });
     };
 
 

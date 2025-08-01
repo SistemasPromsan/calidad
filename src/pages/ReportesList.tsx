@@ -4,7 +4,7 @@ import { Button, Table, Alert, Form, Row, Col } from 'react-bootstrap';
 import { API_URL } from '../config/api';
 import { useNavigate } from 'react-router-dom';
 import LayoutPrivado from '../components/LayoutPrivado';
-import * as XLSX from 'xlsx';
+
 
 export default function ReportesList() {
     const navigate = useNavigate();
