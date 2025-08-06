@@ -11,6 +11,8 @@ const ReporteEditar = () => {
     const [formulario, setFormulario] = useState(null);
     const [catalogos, setCatalogos] = useState(null);
     const [mensaje, setMensaje] = useState("");
+    const [permitirGuardarSinHoras, setPermitirGuardarSinHoras] = useState(false);
+    const [motivoNoHoras, setMotivoNoHoras] = useState("");
 
     useEffect(() => {
         if (!id) {
@@ -28,30 +30,30 @@ const ReporteEditar = () => {
 
                 const reporte = repRes.data;
 
-                // Corregir total_retrabajos en cada inspección sumando los retrabajos reales
-                reporte.inspecciones.forEach((insp: any) => {
-                    insp.total_retrabajos = insp.retrabajos.reduce(
-                        (sum: number, r: any) => sum + Number(r.cantidad || 0),
-                        0
-                    ).toString(); // o sin .toString() si lo usas como número
-                });
+                // ✅ Precargar motivo y checkbox si ya existe
+                setPermitirGuardarSinHoras(!!reporte.motivo_no_horas);
+                setMotivoNoHoras(reporte.motivo_no_horas || "");
 
-
-                // Recorremos cada inspección para agregar descripcion y plataforma
+                // ✅ Corregir total_retrabajos en cada inspección sumando los retrabajos reales
                 if (Array.isArray(reporte.inspecciones)) {
                     reporte.inspecciones.forEach((insp: any) => {
+                        insp.total_retrabajos = insp.retrabajos.reduce(
+                            (sum: number, r: any) => sum + Number(r.cantidad || 0),
+                            0
+                        ).toString();
+
+                        // ✅ Agregar descripción y plataforma
                         const parte = catRes.data.num_partes.find((p: any) => p.id == insp.id_num_parte);
                         if (parte) {
                             insp.descripcion = parte.descripcion;
                             insp.plataforma = parte.plataforma;
                         }
 
-                        // También puedes cargar lista_proveedores si es necesario
+                        // ✅ Cargar lista_proveedores si existe
                         const proveedores = catRes.data.proveedores_por_parte?.[insp.id_num_parte] || [];
                         insp.lista_proveedores = proveedores;
                     });
                 }
-
 
                 setCatalogos(catRes.data);
                 setFormulario(reporte);
@@ -65,9 +67,16 @@ const ReporteEditar = () => {
     }, [id]);
 
 
+
     const handleGuardarEdicion = async (formData: any) => {
         try {
-            await axios.post(`${API_URL}/reportes/editar_reporte.php`, { ...formData, id });
+            // ✅ Enviar también el motivo y el permiso de guardar sin cumplir horas
+            await axios.post(`${API_URL}/reportes/editar_reporte.php`, {
+                ...formData,
+                id,
+                motivo_no_horas: permitirGuardarSinHoras ? motivoNoHoras : null
+            });
+
             setMensaje("Reporte actualizado correctamente.");
             setTimeout(() => {
                 navigate("/reportes-list");
@@ -89,6 +98,9 @@ const ReporteEditar = () => {
                 catalogos={catalogos}
                 onSubmit={handleGuardarEdicion}
                 modo="edicion"
+                permitirGuardarSinHoras={permitirGuardarSinHoras}
+                motivoNoHoras={motivoNoHoras}
+                setPermitirGuardarSinHoras={setPermitirGuardarSinHoras}
             />
         </div>
     );

@@ -42,9 +42,12 @@ interface ReporteFormProps {
     catalogos?: any;
     onSubmit?: (formData: any) => void;
     modo?: string;
+    permitirGuardarSinHoras?: boolean;
+    motivoNoHoras?: string;
+    setPermitirGuardarSinHoras?: (value: boolean) => void;
 }
 
-const ReporteForm = ({ initialData, catalogos: propCatalogos, onSubmit }: ReporteFormProps = {}) => {
+const ReporteForm = ({ initialData, catalogos: propCatalogos, onSubmit, permitirGuardarSinHoras, motivoNoHoras, setPermitirGuardarSinHoras }: ReporteFormProps = {}) => {
     const [catalogos, setCatalogos] = useState<any>(propCatalogos || {});
     const [form, setForm] = useState<FormData>(() => {
         const data = initialData || {
@@ -116,23 +119,16 @@ const ReporteForm = ({ initialData, catalogos: propCatalogos, onSubmit }: Report
             updated[index].lista_proveedores = proveedores;
         }
 
-        // 👉 Validar total_retrabajos
-        if (field === "total_retrabajos") {
-            const total = value === "" ? 0 : parseInt(value);
-            updated[index].total_retrabajos = total.toString();
-
-            if (total === 0) {
-                updated[index].retrabajos = [];
-            }
-        }
-
-        // Calcular piezas OK automáticamente si cambia inspeccionadas o no_ok
         if (field === "piezas_inspeccionadas" || field === "piezas_no_ok") {
-            const inspeccionadas = parseInt(updated[index].piezas_inspeccionadas?.toString() || "0");
-            const noOk = parseInt(updated[index].piezas_no_ok?.toString() || "0");
-
+            const inspeccionadas = toInt(updated[index].piezas_inspeccionadas);
+            let noOk = toInt(updated[index].piezas_no_ok);
+            if (noOk > inspeccionadas) {
+                noOk = inspeccionadas;
+                updated[index].piezas_no_ok = noOk;
+            }
             updated[index].piezas_ok = Math.max(inspeccionadas - noOk, 0);
         }
+
 
 
 
@@ -188,6 +184,10 @@ const ReporteForm = ({ initialData, catalogos: propCatalogos, onSubmit }: Report
         setForm({ ...form, inspecciones: updated });
     };
 
+    const toInt = (v: any) => {
+        const n = parseInt(String(v), 10);
+        return isNaN(n) ? 0 : n;
+    };
 
     const validarFormulario = () => {
         if (!form.id_turno || !form.id_inspector || !form.id_supervisor) {
@@ -195,50 +195,75 @@ const ReporteForm = ({ initialData, catalogos: propCatalogos, onSubmit }: Report
             return false;
         }
 
-        if (form.inspecciones.length === 0) {
+        if (!form.inspecciones.length) {
             alert("Debes agregar al menos una inspección.");
             return false;
         }
 
         for (let i = 0; i < form.inspecciones.length; i++) {
             const ins = form.inspecciones[i];
-            if (
-                !ins.id_num_parte ||
-                !ins.hora_inicio ||
-                !ins.hora_fin ||
-                !ins.piezas_inspeccionadas ||
-                !ins.piezas_ok
-            ) {
+
+            // Requeridos básicos (NOTA: piezas_ok ya no se valida como requerido)
+            if (!ins.id_num_parte || !ins.hora_inicio || !ins.hora_fin || !ins.cargo) {
                 alert(`Faltan campos en la inspección #${i + 1}`);
                 return false;
             }
 
-            const noOk = Number(ins.piezas_no_ok || 0);
-            const totalRechazos = ins.rechazos?.reduce((sum, r) => sum + Number(r.cantidad || 0), 0) || 0;
+            // Números válidos
+            const inspeccionadas = toInt(ins.piezas_inspeccionadas);
+            const noOk = toInt(ins.piezas_no_ok);
 
-            // Nueva validación: Rechazos deben justificar los NO OK
-            if (noOk > 0 && totalRechazos === 0) {
-                alert(`La inspección #${i + 1} tiene piezas NO OK sin registrar motivos de rechazo.`);
+            if (inspeccionadas <= 0) {
+                alert(`Piezas inspeccionadas debe ser > 0 en inspección #${i + 1}`);
+                return false;
+            }
+            if (noOk < 0) {
+                alert(`Piezas NO OK debe ser ≥ 0 en inspección #${i + 1}`);
+                return false;
+            }
+            if (noOk > inspeccionadas) {
+                alert(`Piezas NO OK no puede ser mayor que las inspeccionadas en inspección #${i + 1}`);
                 return false;
             }
 
-            if (noOk > 0 && totalRechazos !== noOk) {
-                alert(`La suma de rechazos debe ser igual a las piezas NO OK en inspección #${i + 1}`);
-                return false;
+            // Rechazos deben justificar los NO OK
+            const totalRechazos = (ins.rechazos || []).reduce(
+                (sum: number, r: any) => sum + toInt(r.cantidad),
+                0
+            );
+
+            if (noOk > 0) {
+                if (totalRechazos === 0) {
+                    alert(`La inspección #${i + 1} tiene NO OK sin registrar motivos de rechazo.`);
+                    return false;
+                }
+                if (totalRechazos !== noOk) {
+                    alert(`La suma de rechazos debe ser igual a las piezas NO OK en inspección #${i + 1}`);
+                    return false;
+                }
             }
 
-            // Validar retrabajos
-            for (let r of ins.retrabajos) {
-                if (!r.id_retrabajo || !r.cantidad || parseInt(r.cantidad.toString()) <= 0) {
+            // Validar cada retrabajo si existe
+            for (const r of ins.retrabajos || []) {
+                if (!r.id_retrabajo || !toInt(r.cantidad) || toInt(r.cantidad) <= 0) {
                     alert(`Hay un retrabajo incompleto en inspección #${i + 1}`);
                     return false;
                 }
             }
 
-            // Validar rechazos
-            for (let d of ins.rechazos) {
-                if (!d.id_defecto || !d.cantidad || parseInt(d.cantidad.toString()) <= 0) {
-                    alert(`Hay un rechazo incompleto en inspección #${i + 1}`);
+            // (Opcional) Validar coherencia con total_retrabajos si usas ese campo
+            const declaradoRet = toInt((ins as any).total_retrabajos);
+            const sumaRet = (ins.retrabajos || []).reduce(
+                (sum: number, r: any) => sum + toInt(r.cantidad),
+                0
+            );
+            if (declaradoRet > 0) {
+                if (sumaRet === 0) {
+                    alert(`Indicó total de retrabajos en inspección #${i + 1}, pero no agregó motivos.`);
+                    return false;
+                }
+                if (sumaRet !== declaradoRet) {
+                    alert(`La suma de retrabajos debe ser igual al Total retrabajos en inspección #${i + 1}`);
                     return false;
                 }
             }
@@ -255,19 +280,21 @@ const ReporteForm = ({ initialData, catalogos: propCatalogos, onSubmit }: Report
             return;
         }
 
+        // Armamos el payload incluyendo el motivo (solo si aplica)
+        const payload = {
+            ...form,
+            motivo_no_horas: currentPermitirGuardarSinHoras ? currentMotivoNoHoras : null,
+            permitir_guardar_sin_horas: currentPermitirGuardarSinHoras ? 1 : 0, // opcional por si lo quieres auditar
+        };
+
+        // Si viene from parent (edición, etc.), usar el mismo payload
         if (onSubmit) {
-            onSubmit(form);
+            onSubmit(payload);
             return;
         }
 
-        // Ya no se usa esta validación porque ahora solo se validan rechazos en validarFormulario()
-        // if (!form.inspecciones.every(validarCantidadMotivos)) {
-        //     alert("¡Error! La suma de rechazos y retrabajos excede las piezas No OK.");
-        //     return;
-        // }
-
         axios
-            .post(`${API_URL}/reportes/crear_reporte.php`, form)
+            .post(`${API_URL}/reportes/crear_reporte.php`, payload)
             .then(() => {
                 setMensaje("Reporte guardado correctamente.");
                 setForm({
@@ -280,9 +307,23 @@ const ReporteForm = ({ initialData, catalogos: propCatalogos, onSubmit }: Report
                     horas_trabajadas: 0,
                     horas_extras: 0
                 });
+                // Limpiar controles del candado
+                currentSetPermitirGuardarSinHoras(false);
+                setLocalMotivoNoHoras("");
             })
             .catch(() => setMensaje("Error al guardar el reporte."));
     };
+
+
+
+    const [localPermitirGuardarSinHoras, setLocalPermitirGuardarSinHoras] = useState(permitirGuardarSinHoras || false);
+    const [localMotivoNoHoras, setLocalMotivoNoHoras] = useState(motivoNoHoras || "");
+
+    // Use props if provided, otherwise use local state
+    const currentPermitirGuardarSinHoras = permitirGuardarSinHoras !== undefined ? permitirGuardarSinHoras : localPermitirGuardarSinHoras;
+    const currentMotivoNoHoras = motivoNoHoras !== undefined ? motivoNoHoras : localMotivoNoHoras;
+    const currentSetPermitirGuardarSinHoras = setPermitirGuardarSinHoras || setLocalPermitirGuardarSinHoras;
+
 
 
 
@@ -384,8 +425,34 @@ const ReporteForm = ({ initialData, catalogos: propCatalogos, onSubmit }: Report
                             </Form.Group>
                         </Col>
 
-                    </Row>
+                        {form.horas_trabajadas < 8 && (
+                            <Col md={5}>
+                                <Form.Check
+                                    type="checkbox"
+                                    label="Permitir guardar indicando motivo"
+                                    checked={currentPermitirGuardarSinHoras}
+                                    onChange={(e) => {
+                                        currentSetPermitirGuardarSinHoras(e.target.checked);
+                                        if (!e.target.checked) setLocalMotivoNoHoras("");
+                                    }}
+                                />
+                                {currentPermitirGuardarSinHoras && (
+                                    <Form.Select
+                                        className="mt-2"
+                                        value={currentMotivoNoHoras}
+                                        onChange={(e) => setLocalMotivoNoHoras(e.target.value)}
+                                    >
+                                        <option value="">-- Selecciona motivo --</option>
+                                        <option value="Falta de material">Falta de material</option>
+                                        <option value="Falla en máquina">Falla en máquina</option>
+                                        <option value="Ausencia personal">Ausencia de personal</option>
+                                        <option value="Otro">Otro</option>
+                                    </Form.Select>
+                                )}
+                            </Col>
+                        )}
 
+                    </Row>
 
                     <hr />
                     <h5>Inspecciones</h5>
@@ -671,16 +738,14 @@ const ReporteForm = ({ initialData, catalogos: propCatalogos, onSubmit }: Report
                         + Agregar inspección
                     </Button>
 
-                    <div className="mt-4">
-                        <Button
-                            variant="success"
-                            onClick={() => setShowConfirm(true)}
-                            disabled={form.horas_trabajadas < 8}
-                        >
-                            Guardar
-                        </Button>
+                    <Button
+                        variant="success"
+                        onClick={() => setShowConfirm(true)}
+                        disabled={form.horas_trabajadas < 8 && !currentPermitirGuardarSinHoras}
+                    >
+                        Guardar
+                    </Button>
 
-                    </div>
                 </Form>
 
                 {/* Confirmación */}
