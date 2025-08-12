@@ -36,52 +36,52 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             </RutasProtegidas>
           } />
           <Route path="/usuarios" element={
-            <RutasProtegidas rolesPermitidos={['Administrador']}>
+            <RutasProtegidas rolesPermitidos={['administrador']}>
               <Usuarios />
             </RutasProtegidas>
           } />
           <Route path="/inspectores" element={
-            <RutasProtegidas>
+            <RutasProtegidas rolesPermitidos={['administrador', 'capturista']}>
               <Inspectores />
             </RutasProtegidas>
           } />
           <Route path="/num-partes" element={
-            <RutasProtegidas>
+            <RutasProtegidas rolesPermitidos={['administrador', 'capturista']}>
               <NumPartes />
             </RutasProtegidas>
           } />
           <Route path="/plataformas" element={
-            <RutasProtegidas>
+            <RutasProtegidas rolesPermitidos={['administrador', 'capturista']}>
               <Plataformas />
             </RutasProtegidas>
           } />
           <Route path="/defectos" element={
-            <RutasProtegidas>
+            <RutasProtegidas rolesPermitidos={['administrador', 'capturista']}>
               <Defectos />
             </RutasProtegidas>
           } />
           <Route path="/proveedores" element={
-            <RutasProtegidas>
+            <RutasProtegidas rolesPermitidos={['administrador', 'capturista']}>
               <Proveedores />
             </RutasProtegidas>
           } />
           <Route path="/retrabajos" element={
-            <RutasProtegidas>
+            <RutasProtegidas rolesPermitidos={['administrador', 'capturista']}>
               <Retrabajos />
             </RutasProtegidas>
           } />
           <Route path="/turnos" element={
-            <RutasProtegidas>
+            <RutasProtegidas rolesPermitidos={['administrador', 'capturista']}>
               <Turnos />
             </RutasProtegidas>
           } />
           <Route path="/cargos" element={
-            <RutasProtegidas>
+            <RutasProtegidas rolesPermitidos={['administrador', 'capturista']}>
               <Cargos />
             </RutasProtegidas>
           } />
           <Route path="/incumplimientohoras" element={
-            <RutasProtegidas>
+            <RutasProtegidas rolesPermitidos={['administrador', 'capturista']}>
               <Incumplimientohoras />
             </RutasProtegidas>
           } />
@@ -91,7 +91,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             </RutasProtegidas>
           } />
           <Route path="/supervisores" element={
-            <RutasProtegidas>
+            <RutasProtegidas rolesPermitidos={['administrador', 'capturista']}>
               <Supervisores />
             </RutasProtegidas>
           } />
